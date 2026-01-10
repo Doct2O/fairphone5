@@ -1,0 +1,15 @@
+diff --git a/SConscript b/SConscript
+index 4515b1fd5..6de788ffc 100644
+--- a/SConscript
++++ b/SConscript
+@@ -491,6 +491,10 @@ envs["GPSD_HOME"] = os.getcwd() + os.sep + 'gpsd'
+ 
+ env = Environment(tools=["default", "tar", "textfile"], options=opts, ENV=envs)
+ 
++env.Append(LINKFLAGS=[
++     '-landroid-shmem'
++])
++
+ # Release identification begins here.
+ #
+ # Actual releases follow the normal X.Y or X.Y.Z scheme.  The version
