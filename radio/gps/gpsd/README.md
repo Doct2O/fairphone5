@@ -23,6 +23,33 @@ Android NDK, as the latter may be a major pain to build Linux destined sources.
 Build the gpsd (and anything else for that matter), while charging and screen on (you can enable keeping the screen on, while plugged in somewhere in Android's hidden dev options).
 This will guarantee that you have most of the performance and the build won't take longer than it needs to take.
 
+**Acquire wakelock right before starting the gpsd**, especially if you are going to run it in background and even more so, when the screen is off.
+Otherwise due to aggressive battery saving policy, Android may cause major delay while receiving the GPS data, or go to sleep entirely and subsequently
+completely cease scheduling CPU's time to the gpsd/translation script.  
+In termux the wake lock may be acquired by invoking following command:
+```
+termux-wake-lock
+```
+And released via:
+```
+termux-wake-unlock
+```
+In vanilla Android ***with root access***, the other way to acquire wake lock is by writing unique name to `/sys/power/wake_lock` e.g.:
+```
+echo "my_unique_id_for_wake_lock" > /sys/power/wake_lock
+```
+and to release it:
+```
+echo "my_unique_id_for_wake_lock" > /sys/power/wake_unlock
+```
+It does work, but it does not show when listed via power manager (it is not surprise, though, as we are completely circumventing Android power service here):
+```
+# dumpsys power | grep -i 'wake locks' -A 10
+```
+***BEWARE*** Always release the wakelock when no logner needed and hold it for as short as possible. Otherwise it may result in increased battery consumption.
+             This is especially true while writing directly to `/sys/power/wake_lock` as Android does not have any measures to track who acquired the lock,
+             and release it automatically. Do a proper cleanup in the latter method.
+
 ***SECURITY AND PRIVACY CONCERN***  
 Please run the `gpsd` only when it is necessary and when you actually are using it (that's why I disable daemon mode by adding flag `-N`,
 which should make the process end with user's session).  
@@ -207,6 +234,11 @@ settings put secure location_mode 3
 Disable location:
 ```
 settings put secure location_mode 0
+```
+I also recommend to enable Assisted GPS - to save bandwidth via GPS channel and get the GPS fix quickly
+(it makes the system to obtain the satellites orbital data via Internet rather than relatively slow connection of GPS).
+```
+settings put global assisted_gps_enabled 1
 ```
 
 ### Troubleshooting gpsd setup

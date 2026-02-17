@@ -25,7 +25,12 @@ Pretty much all instructions/tips/tricks/hacks contained in this repo will silen
 
 If something is not working, please refer to the date of the commit in which given text was authored, and confront it with
 the version of the setup and packages of this time (if not explicitly stated, I am trying to provide this info, tho), as all
-stuff described was tested.
+stuff described was tested.  
+
+Please also refer to tags placed on commits, to see on which version of LineageOS given repo state was tested.
+Commits and changes following a tag, refers exclusively to the version from the tag proceeding them and there is no guarantee that
+they would work on any other version (on the previous ones in particular, as I may be too lazy to keep the tags up-to-date 
+if nothing is broken after LineageOS bump :P).
 
 # Repo layout
 
@@ -36,6 +41,7 @@ Less logic == easier maintenance.
 * `radio` - Radio-Frequency related stuff. For now: Wi-Fi, GPS and cellular.
 * `stock-rom-files-extraction` - Description how to extract files from the sock Fairphone 5 ROM.
 * `hdmi-over-usb-c` - Description how to get working the screen mirroring on the external display, via USB-C on LineageOS. It is surprisingly finicky.
+* `hw-tinkering` - Instructions on reconfiguring, messing and interfacing with the hardware, not necessarily as makers intended to :)
 
 # Mandatory disclaimer
 
