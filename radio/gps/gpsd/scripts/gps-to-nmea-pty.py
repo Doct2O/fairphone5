@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 import os, pty, json, subprocess, time, signal, atexit, termios, argparse, sys
 from datetime import datetime, UTC
 
@@ -17,7 +17,26 @@ def decimal_to_nmea(degrees, is_lat):
     mm = (abs_d - dd) * 60
     return f"{dd:0{2 if is_lat else 3}d}{mm:08.5f}", (("N" if degrees >= 0 else "S") if is_lat else ("E" if degrees >= 0 else "W"))
 
-def get_sentences():
+def get_sentences_native():
+    import py_and_svc_binds as asb
+
+    if loc_fix := asb.get_location(timeout=None):
+        lat, ldir = decimal_to_nmea(loc_fix.get('latitude', 0.0), True)
+        lon, odir = decimal_to_nmea(loc_fix.get('longitude', 0.0), False)
+        ts = datetime.fromtimestamp(loc_fix.get('time_ms', 0.0)/1000).strftime("%H%M%S.00")
+        dt = datetime.fromtimestamp(loc_fix.get('time_ms', 0.0)/1000).strftime("%d%m%y")
+        alt = loc_fix.get('altitude', 0.0)
+
+        sentences = [
+            f"GPRMC,{ts},A,{lat},{ldir},{lon},{odir},0.0,0.0,{dt},,,A",
+            f"GPGGA,{ts},{lat},{ldir},{lon},{odir},1,08,1.0,{alt:.1f},M,0.0,M,,",
+            f"GPGSA,A,3,01,02,03,04,05,06,07,08,,,,1.5,1.0,1.2"
+        ]
+        return "".join([f"${s}*{calculate_checksum(s)}\r\n" for s in sentences])
+
+    return None
+
+def get_sentences_termux():
     try:
         # Removed timeout to avoid process hanging/killing overhead
         raw = subprocess.check_output(["termux-location"], shell=True)
@@ -53,6 +72,7 @@ def run():
     global master_fd
     parser = argparse.ArgumentParser()
     parser.add_argument("--stdout", action="store_true")
+    parser.add_argument("--gps-native", action="store_true")
     args = parser.parse_args()
 
     if not args.stdout:
@@ -71,8 +91,19 @@ def run():
         os.symlink(slave_name, LINK_PATH)
         print(f"[*] PTY active: {LINK_PATH}", file=sys.stderr)
 
+    sentences_generator =  get_sentences_native if args.gps_native else get_sentences_termux
     while True:
-        data = get_sentences()
+        data = None
+        try:
+            data = sentences_generator()
+        except Exception as e:
+            if args.gps_native:
+                print(f"[*] Native GPS unavailable/failed, falling back to Termux: {e}", file=sys.stderr)
+                sentences_generator = get_sentences_termux
+            else:
+                print(f"[*] Termux GPS provider failed: {e}", file=sys.stderr)
+                sys.exit(1)
+
         if data:
             if args.stdout:
                 sys.stdout.write(data)

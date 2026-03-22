@@ -1,11 +1,11 @@
 # Display port/HDMI over USB-C on LineageOS
 
 As funny as it may sound either LineageOS or the Fairphone itself (but pretty sure, the former,  
-because IIRC it worked out of the box on the stock ROM) is really fussy on how, what, and in  
+because IIRC it worked out of the box on the stock ROM) is really fussy about how, what, and in  
 what order is plugged into the USB-C port, while trying to use the external display.
 
 Nevertheless after going borderline insane, I think I managed to determine the proper 
-way to plug in stuff, to make the LineageOS happy and which works _pretty_ reliably.
+way to plug in stuff to make LineageOS happy and which works _pretty_ reliably.
 
 # Prerequisites
 
@@ -18,10 +18,10 @@ Later I'll assume that it is already plugged into your phone.
 
 In my tests I managed to get working pretty much any splitter that I got my hands on.
 
-My splitter of choice, though, is a flat relatively small metal box, with three ports on the one side (USB-A, HDMI, USB-C)
+My splitter of choice, though, is a flat relatively small metal box, with three ports on one side (USB-A, HDMI, USB-C)
 with width matching the width of those ports put together next to each other (give or take) and a short USB-C cord on the other, opposite side.
 
-All of those three ports were functional at once in a such configuration: 
+All of those three ports were functional at once in such a configuration: 
 
 - USB-A: where I plugged the USB hub, to which in turn, I plugged external HDD drive and a wireless mouse.
 - USB-C on splitter: for charging (no fast charging available, though. Still, battery WAS charged.)
@@ -30,19 +30,20 @@ All of those three ports were functional at once in a such configuration:
 ### Other hardware
 
 Once I've connected the external display as described in following sections, the type of the splitter,
-length of the cable (and what not) does not seem to do much of a difference.
+length of the cable (and what not) does not seem to make much of a difference.
 
 It also streamed sound to the display (here you need to make sure the cable supports that, though), hell, it even
 worked via the HDMI->DVI adapter.
 
-So, at least in that regards, the LineageOS is not too picky :)
+So, at least in that regard the LineageOS is not too picky :)
 
 # Rootless section
 
 All instructions described in following sub-chapters, should work on non-rooted LineageOS on Fairphone 5.
 
-Be warned, though. The rootless experience on the LineageOS is pretty underwhelming, as it appears to only be capable of mirroring the screen
-in exact the same resolution (or aspect ratio, rather) as the phone's display. 
+Be warned, though. The rootless experience on the LineageOS is pretty underwhelming, ~as it appears to only be capable of mirroring the screen
+in exact the same resolution (or aspect ratio, rather) as the phone's display.~ Now the resolution may be changed, but effectively it does not change much
+with black enveloping area :P
 
 Stock Android's settings does not help here either, as there, you can at most change the orientation of the streamed image,
 by flipping it by 90, 180 and 270 degrees.
@@ -51,7 +52,7 @@ As far as I can tell the system processes the output image in such a way, that i
 of the external display's resolution.  
 And you guessed it, if the ratio is far off, this results in a nasty black filling-up-space displayed around the proper image.
 
-Nevertheless to get it working, tightly follow steps in the next sections. 
+Nevertheless to get it working, closely follow steps in the next sections. 
 
 ***NOTE: If you lost the external screen image, unplug everything from the adapter and re-iterate the steps.***
 
@@ -63,15 +64,24 @@ Nevertheless to get it working, tightly follow steps in the next sections.
 3. Lock the screen
 4. Unlock the screen 
 
-And viola, the mirrored image on your external screen should appear in less than 10 seconds.
+And voila! The mirrored image on your external screen should appear in less than 10 seconds.
 If not, repeat the steps `3.` - `4.` with longer pause between them.
+
+If you still have problems, make sure there are no wake locks active, as the trigger requires deep sleep engaged between points `3.` and `4.`.
+To verify that, invoke. **Requires root access**:
+```
+dumpsys power | grep -i 'wake locks' -A 10
+```
+If it says `Wake Locks: size=0` you are good to try again. If not, stop the apps on the list holding the wake lock 
+(`DOZE_WAKE_LOCK` held by `dream:doze` is freed automatically, wait a while for it and do not kill app holding it).
+
 
 ## External display with charging
 
 If your splitter also has a port for charging (usually USB-C), plug in the charger ***FIRST***. 
 And when battery starts to charge, follow steps in section `External display solo`.
 
-If done other way around, the phone may report dirt or moisture in the port, and neither
+If done the other way around, the phone may report dirt or moisture in the port, and neither
 the charging nor any external USB device will work.
 
 ## External display with other USB devices
@@ -97,7 +107,7 @@ But it seems to be broken on LineageOS;
 the external display loves to disconnect (fixable with setting fixed framerate, see further on),
 the title bar of the apps does not disappear in the full screen mode,
 and to top it off, mouse cursor tends to jump back to the phone's screen (fixable with screen rotation).  
-But most importantly: the Android apps struggles a lot, as most of them never were developed with
+But most importantly: the Android apps struggles a lot, as most of them were never developed with
 desktop mode in mind in the first place.
 So for now it is no go.  
 But be as it may, I paste the settings to change via the terminal, if you'd like to test the desktop mode yourself.
@@ -106,7 +116,7 @@ For them, go to the very end of this document.
 ## Advisory and word of warning
 
 ***For your own sake, do not reset the phone while not in Phone's original resolution.
-The settings changed here survives the reboot, and then the phone may use the weirdest resolution
+The settings changed here survive the reboot, and then the phone may use the weirdest resolution
 for first unlock, rendering it very hard or in extreme cases impossible to unlock.***
 
 Also I highly recommend connecting the USB mouse to the phone, as in some resolutions it is really hard to use phone via touch screen.
@@ -117,14 +127,22 @@ That, or at least to spare the struggle: prepare what you want to mirror FIRST a
 First off, in the `scripts` subdir you can find script named `reset-fp5-defaults.sh`
 which resets all the settings to FP5 and LineageOS defaults, so you can save yourself, if you screw something up.
 
+Even better so, it may be bound to the HDMI cable unplug by script of mine, so the defaults restoration happens automatically when the connection
+with external display is lost. See `hw-tinkering/hw-event-binder/README.md` path relative to the repo's root, for more details.
+
 ## autores-fp5.sh
+
+**MAJOR WARNING. Since recent update of LineageOS, calling the `autores-fp.sh` will cause loss of the main screen layout and icons for good.
+I haven't found a proper workaround for that yet, the only option is to backup launcher's settings on `/data` partition and bring them back,
+however I cannot assure that will work reliably in general, thus I am not incorporating this in scripts by default.
+For details see chapter `My icons are all messed up on the main screen/I've lost my main screen layout, after resetting to default settings`**
 
 Second off, in the `scripts` subdir you can find script named `autores-fp5.sh`
 which detects the external's display resolution (and it presence for that matter)
 and automatically calculates optimal resolution and DPI to set and the applies them.
 
-***Mind ya, the `autores-fp5.sh` by default completely turns off the phone's screen, so don't be scared, that's normal.
-It still will reacts to touch but it is blacked-out to spare the screen lifespan.
+***Mind ya, the `autores-fp5.sh` by default completely turns off the phone's screen, so don't be alarmed; that's normal.
+It still will react to touch but it is blacked-out to spare the screen lifespan.
 If you need to urgently turn it back on again, just lock and unlock the phone.***
 
 Copy the script to the phone and then - once the mirroring is already working - run it as follows. ***Must be run as a root***:
@@ -132,8 +150,8 @@ Copy the script to the phone and then - once the mirroring is already working - 
 ./autores-fp5.sh
 ```
 
-In case the app which you want to mirror on the external display unconditionally rotates the screen,
-call `autores-fp5.sh` with the flag `--landscape`. This swaps the detected height and width around,
+In case when the app which you want to mirror on the external display unconditionally rotates the screen,
+call `autores-fp5.sh` with the flag `--landscape`. This swaps the detected height and width,
 which should help in such situation. Simply call like this:
 ```
 ./autores-fp5.sh --landscape
@@ -166,11 +184,8 @@ Yeah, those, here we can fix that.
 If instead of `reset` we pass a resolution in format `size <width>x<height>` after that, 
 the phone will start to use this resolution as a native now on. 
 
-And if we get the resolution and DPI just right, or close enough to the aspect ratio of  
+And if we get the resolution and DPI just right regarding the aspect ratio of  
 the external display, we will eliminate the frames completely or severely minimize them.
-
-This requires trial and error as sometimes you may need to flip the resolution around, and
-pass it `size <height>x<width>`, or enable auto-rotation of the screen.
 
 It all depends on how the app you are currently using displays stuff.
 
@@ -198,10 +213,11 @@ But why change those from defaults?
                            won't come up, leaving you without ability to type on the phone using the mouse.
 - ***keep screen on*** - because it is really annoying when you got everything ready, you operate the phone comfortable   
                          from the distance. And the phone decided to lock, because you didn't do anything for a while.
-                         And now you need to get up and unlock the phone, as it is impossible to wake the phone on distance. That's why.
+                         ~And now you need to get up and unlock the phone, as it is impossible to wake the phone on distance. That's why.~ 
+                         I don't think this longer applies. Nevertheless auto-lock is still annoying.
 - ***screen brightness mode*** - Set to manual, so we can later dim the Phone's screen to zero and we won't need to 
-                                 worry about it again turning on by its own due to ambient lighting condition change.
-- ***HW brightness of the OLED panel*** - as we already are using the external display and we are mirroring image there too,
+                                 worry about it turning on again by its own, due to the ambient lighting condition change.
+- ***HW brightness of the OLED panel*** - as we already are using the external display and we are mirroring image there,
                                           we don't really need the Phone's screen anymore (for some resolutions it may be unreadable, too).
                                           That way we are limiting the battery usage as well as screen burnout. Here I quietly assume
                                           usage of some wireless input device, like mouse.
@@ -214,24 +230,24 @@ What are correct values for those on Fairphone 5?
   To fix the refresh rate both must have the same value. And the correct ones are `60` and `90`.
   Any other one is ignored and IIRC you are back to dynamic refresh rate.
   To make the framerate fixed, invoke following commands:
-      * 60 fps
+    * 60 fps
       ```
       settings put system min_refresh_rate 60
       settings put system peak_refresh_rate 60
       ```
-      * 90 fps
+    * 90 fps
       ```
       settings put system min_refresh_rate 90
       settings put system peak_refresh_rate 90
       ```
-      * Default:
+    * Default:
       ```
       settings delete system peak_refresh_rate
       settings put system min_refresh_rate 0.0
       ```
 - `show_ime_with_hard_keyboard`  
   either `1` or `0`, where obviously:
-  `1` means show the virtual keyboard, despite detection of physical one and `0` does the opposite.  
+  `1` means: show the virtual keyboard, despite detection of physical one, and `0` does the opposite.  
   Set as follows:
     * Enable virtual keyboard alongside physical 
     ```
@@ -338,16 +354,54 @@ settings put system min_refresh_rate 0.0
 
 Remember to disable the FPS counter.
 
+#### Despite using the `autores-fp5.sh` script I still see black framing around the image (image also may seem squished)
+
+Most likely you have changed the rotation for external display in the Adnroid settings.
+Bring it back to `standard` under `Settings`->`Connected Devices`->`External Displays`->`Rotation` and you are good to go.
+It may require re-running the `autores-fp5.sh` script.
+
+#### The display seems to be not responding and/or be stuck on main screen after reset to defaults 
+
+Perform lock-unlock cycle, until it responds to touch.
+Now, although it may not respond to swipe, it should respond to taps. Touch and hold the main screen and enter
+screen settings, or open any new app. The main view should be back to normal by now.
+
 #### My icons are all messed up on the main screen/I've lost my main screen layout, after resetting to default settings
 
-For some reason, from time to time, the main launcher changes the icons grid settings
-after switching back to default screen settings of the phone.  
-To fix that, simply bring back the grid setting you got before. This is how it's done:
+~For some reason, from time to time, the main launcher changes the icons grid settings~
+~after switching back to default screen settings of the phone.~
+~To fix that, simply bring back the grid setting you got before. This is how it's done:~
 
-- Long press on the main screen
-- Press: `Wallpaper and style` (or something similar) in the pop up menu
-- Scroll down and find `Applications grid`, or something similar
-- The new view shall appear. Choose your previous settings.
+~- Long press on the main screen~
+~- Press: `Wallpaper and style` (or something similar) in the pop up menu~
+~- Scroll down and find `Applications grid`, or something similar~
+~- The new view shall appear. Choose your previous settings.~
+
+As for now this no longer works, and the icons and main screen layout is gone for good.
+The easiest, least intrusive and universal method is to keep a screenshot of your layout to recreate it later manually.
+But yeah, this is utterly miserable and annoying that way, so we are not stopping at that, at least not for stock LineageOS launcher.
+
+For LineageOS's Trebuchet or `com.android.launcher3`, the workaround looks like this **Requires root access**:
+
+- First make a backup folder, to store there the settings later on:
+```
+TREBUCHET_UID=$(stat -c "%u" /data/data/com.android.launcher3)
+mkdir -p /data/data/com.android.launcher3/backup/ && chown ${TREBUCHET_UID}:${TREBUCHET_UID} /data/data/com.android.launcher3/backup/
+```
+- Copy current settings to the folder you've just created (you must do it every time you've changed something on the main screen):
+```
+cp -r /data/data/com.android.launcher3/databases /data/data/com.android.launcher3/shared_prefs /data/data/com.android.launcher3/backup/
+```
+- After resetting display to its defaults, bring back the saved Trebuchet settings:
+```
+cp -r /data/data/com.android.launcher3/backup/* /data/data/com.android.launcher3/
+```
+- Reset the trebuchet via `am` to apply restored settings:
+```
+am force-stop com.android.launcher3
+```
+You may add those two last calls, as an additional commands to be run on the HDMI cable disconnect in script `hw-event-binder.py`, after running `reset-fp5-defaults.sh`.
+See `hw-tinkering/hw-event-binder/README.md` path relative to repo's root, for details.
 
 ## Desktop mode and screen extending on LineageOS
 

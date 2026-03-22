@@ -1,9 +1,9 @@
 # Qualcomm Diagnostic Mode on Fairphone 5
 
-Qualcom Diag Mode allows to peek on the actual cellular network packets, that
-are exchanged between the phone and BTS (btw. I am curious if it is possible to abuse Phone's modem to 
+Qualcomm Diag Mode allows to peek on the actual cellular network packets, that
+are exchanged between the phone and BTS (btw I am curious if it is possible to abuse Phone's modem to 
 see other's packets on different channels - even knowing they are encrypted top to bottom - or send completely custom packets,
-kinda like poor's man SDR. But this is topic for another time...).
+kinda like poor man's SDR. But this is topic for another time...).
 
 In the Fairphone 5 case I've seen packets up to the 5G in the capture files.
 I am nowhere near to the expert in the field, though, and haven't done a lot of poking around that, so
@@ -15,12 +15,12 @@ https://github.com/P1sec/QCSuper
 
 And as a matter of fact, I will use this tool extensively later on.
 
-This file only contains minimum of steps to get the diag mode working via USB/locally on the device 
+This file only contains minimum steps to get the diag mode working via USB/locally on the device 
 (and yes, both QCSuper and diag mode may be run entirely on the device in question, without dealing with USB at all).
 
 If you are curious what is actually going on in here, which driver interfaces with the Qualcomm chip for diag frames,
 what the hell the other files and scripts are for, or simply you need some reference for other device.
-Then buckle up, as it is quite of a story and go ahead and open `GettingDiagModeToWorkTheCompleteStory.md`.
+Then buckle up, as it is quite a story and go ahead and open `GettingDiagModeToWorkTheCompleteStory.md`.
 
 # Advisory
 
@@ -35,7 +35,7 @@ Then buckle up, as it is quite of a story and go ahead and open `GettingDiagMode
 git clone https://github.com/P1sec/QCSuper.git
 (cd QCSuper && git checkout f5f1501c7ce09f6c167ae623233f674be09cdf87)
 ```
-Also follow Installation steps in that repo, so in the end the script is operational.
+Also follow installation steps in that repo, so in the end the script is operational.
 For above commit it will be something like this:
 ```
 pip install --upgrade pyserial pyusb crcmod https://github.com/P1sec/pycrate/archive/master.zip
@@ -71,7 +71,7 @@ pip install --upgrade pyserial pyusb crcmod https://github.com/P1sec/pycrate/arc
    ```
 
    If the traffic seems to be dormant (nothing comes after `INFO @ _enable_log_mixin.py:141`), try to dial some USSD code,
-   for example, check your credit balance (the code doesn't even need to be valid).
+   for example check your credit balance (the code doesn't even need to be valid).
    This should generate a bit of traffic.
 
 4. ***As a root.*** To disable diag mode on the USB, call:
@@ -88,7 +88,7 @@ Luckily the Fairphone 5 meets both of those criteria.
 
 # Advisory
 
-***DO NOT*** kill the `diag-router` binary nor the `diag-router-router.py` script, once it was launched. If you do so, the diag protocol won't work beyond that (even after re-launching them both). And you will need to restart the whole device to get it working again.
+***DO NOT*** kill the `diag-router` binary nor the `diag-router-router.py` script, once it has been launched. If you do so, the diag protocol won't work beyond that (even after re-launching them both). And you will need to restart the whole device to get it working again.
 
 The `diag-router-router.py` allows only one connected client at once on both sides of the socket, so please keep that in mind, if your connection has been rejected.
 
@@ -142,7 +142,7 @@ If you change your mind, you can simply switch between them just by running the 
 - For PTY mode:
 ```
 # The diag-on-loc.sh script creates link to current PTY next to its source file for sake of simplicity,
-# but qcsuper accepts char device only, so we resolve the link in fly via readlink.
+# but qcsuper accepts char device only, so we resolve the link on the fly via readlink.
 ./qcsuper.py --usb-modem $(readlink -f qm-diag-mode/ttyDiag) --pcap-dump dump.pcap
 ```
 
@@ -154,7 +154,7 @@ If you change your mind, you can simply switch between them just by running the 
 If you are unsure if the packets are actually captured (the pcap file does not need to increase its size immediately),
    run the `QCSuper` in the verbose, debug mode:
    ```
-   # More 'v' the better (not really :D)
+   # The more 'v' the better (not really :D)
    ./qcsuper.py -vvvv (...)
    ```
 
@@ -169,7 +169,7 @@ If you are unsure if the packets are actually captured (the pcap file does not n
    ```
 
    If the traffic seems to be dormant (nothing comes after `INFO @ _enable_log_mixin.py:141`), try to dial some USSD code,
-   for example, check your credit balance (the code doesn't even need to be valid).
+   for example check your credit balance (the code doesn't even need to be valid).
    This should generate a bit of traffic.
 
 4. To terminate the session, end the `qcsuper.py` script first (so the diag session stops gracefully), and then just call:

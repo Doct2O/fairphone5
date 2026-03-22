@@ -67,7 +67,7 @@ echo "[*] Starting display detection..."
 # --- Detect External Display ---
 # We use dumpsys display and parse for "External" or "HDMI" devices.
 # We extract the first occurrence of standard width x height.
-EXT_INFO=$(dumpsys display | grep -iE 'DisplayDeviceInfo.*(type=EXTERNAL|HDMI)' | head -n 1)
+EXT_INFO=$(dumpsys display | grep "mBaseDisplayInfo=DisplayInfo" | grep 'type EXTERNAL' | head -n 1)
 
 if [ -z "$EXT_INFO" ]; then
     echo "[-] No external display detected."
@@ -151,8 +151,18 @@ settings put secure show_ime_with_hard_keyboard 1
 settings put global stay_on_while_plugged_in 3
 # Hard set manual brightness control, so screen won't turn on by its own
 settings put system screen_brightness_mode 0
+
 # First dim the screen fully and then Turn off phone's screen
 # completely, reducing power consumption and burnout
-# this is not permanent. Lock and unlock to reset.
-settings put system screen_brightness 0
-echo "0" > /sys/class/backlight/panel0-backlight/brightness
+# this is not permanent. Lock and unlock to reset. Do it in loop until it actually takes effect.
+PANEL_BRIGHTNESS_CONTROL_NODE=/sys/class/backlight/panel0-backlight/brightness
+BLACKING_OUT_TRY_COUNT=0
+BLACKING_OUT_MAX_TRIES=6
+while test -e "${PANEL_BRIGHTNESS_CONTROL_NODE}" && \
+      [ "$(cat "${PANEL_BRIGHTNESS_CONTROL_NODE}")" -ne 0 ] && \
+      [ "${BLACKING_OUT_TRY_COUNT}" -lt "${BLACKING_OUT_MAX_TRIES}" ]; do
+    settings put system screen_brightness 0
+    echo "0" > /sys/class/backlight/panel0-backlight/brightness
+    sleep 0.5
+    BLACKING_OUT_TRY_COUNT=$((BLACKING_OUT_TRY_COUNT + 1))
+done

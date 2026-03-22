@@ -1,10 +1,10 @@
 # gpsd running natively on the Android
 
 ## Building the gpsd service
-The build will be done directly on the target device, using the termux and it's development packages, in contrast to cross-compiling via
-Android NDK, as the latter may be a major pain to build Linux destined sources. 
+The build will be done directly on the target device, using the Termux and its development packages, in contrast to cross-compiling via
+Android NDK, as the latter may be a major pain to build Linux-targeted sources. 
 
-### Prerequsites
+### Prerequisites
 - Termux
 - Termux packages: `git python python-pip libandroid-shmem binutils`
    Install by:
@@ -20,7 +20,7 @@ Android NDK, as the latter may be a major pain to build Linux destined sources.
    After this all packages needed for build should be there. Proceed with the build process in following `Build process` chapter. 
 
 ### Recommendations
-Build the gpsd (and anything else for that matter), while charging and screen on (you can enable keeping the screen on, while plugged in somewhere in Android's hidden dev options).
+Build the gpsd (and anything else for that matter), while charging and with the screen on (you can enable keeping the screen on, while plugged in somewhere in Android's hidden dev options).
 This will guarantee that you have most of the performance and the build won't take longer than it needs to take.
 
 **Acquire wakelock right before starting the gpsd**, especially if you are going to run it in background and even more so, when the screen is off.
@@ -46,7 +46,7 @@ It does work, but it does not show when listed via power manager (it is not surp
 ```
 # dumpsys power | grep -i 'wake locks' -A 10
 ```
-***BEWARE*** Always release the wakelock when no logner needed and hold it for as short as possible. Otherwise it may result in increased battery consumption.
+***BEWARE*** Always release the wakelock when no longer needed and hold it for as short as possible. Otherwise it may result in increased battery consumption.
              This is especially true while writing directly to `/sys/power/wake_lock` as Android does not have any measures to track who acquired the lock,
              and release it automatically. Do a proper cleanup in the latter method.
 
@@ -58,11 +58,11 @@ Now, I am not sure how seLinux policies are working for sockets on Android, but 
 by starting `gpsd` as a root and in particular by `su` binary.  
 If gpsd is not launched via `su` it does not work properly, likely due to some seLinux policies, but rather not due sockets restrictions (netcat has no problem with establishing connection on port 2947).  
 To put it straight, this is a major loophole in the Android permissions control.
-And for exactly this reason, in later "Fully terminal approach" my translation script outputs the NMEA sentences via PTY bound to current user and root (in contrast to net socket).
+And for exactly this reason, in later `Fully terminal approach` my translation script outputs the NMEA sentences via PTY bound to current user and root (in contrast to net socket).
 So no one else have access to it.
 
 ### Build process
-1. Clone the sources of the gpsd and checkout the proper version (you can eagerly try latest main, the commit is provided here just for working reference)
+1. Clone the sources of the gpsd and checkout the proper version (you can eagerly try latest main, the commit hash is provided here as a working reference)
 ```bash
 git clone https://gitlab.com/gpsd/gpsd.git
 cd gpsd && git checkout 92660f43b3279e6279ec59010c662b157af4e8de
@@ -126,13 +126,14 @@ Or similar in case of different commit.
 
 ### Running the gpsd binary on Android
 
-***You need the root access, to run the gpsd binary, otherwise it does not work. Ask me how I know :)***
+***You need the root access to run the gpsd binary, otherwise it does not work. Ask me how I know :)***
 
-Here is the tricky part, as the gpsd expects retrieving the location data by NMEA sentences via network/serial device.
-There are couple of ways to achieve that. I'll describe two:
+Here is the tricky part, as the `gpsd` expects retrieving the location data by NMEA sentences via network/serial device.
+There are couple of ways to achieve that. I'll describe two of them:
 
-1. The easiest one I could devise is by using `gpsdRelay` app from over here: 
+**1. The easiest one I could devise is by using `gpsdRelay` app from over here:**
 https://github.com/project-kaat/gpsdRelay
+
 The installable apk can be downloaded from releases in there (also can be found on F-Droid).
 
 Once the app is installed, allow the access to the GPS all the time, not only when the app is in the foreground. 
@@ -142,7 +143,7 @@ In the app:
 - Press the `+` icon at the right bottom
 - Select TCP/UDP server (does not really matter which, but some subsequent commands must be adjusted accordingly)
 - Input IPv4 as `127.0.0.1` and any port above 1024 and below 65535, really. I'll be further using `12345`.
-- Keep only `NMEA generation` on, as the `NMEA relaying` causes aircrack-ng to loose the location periodically
+- Keep only `NMEA generation` on, as the `NMEA relaying` causes `airodump-ng` to lose the location periodically
 - Press `Add`
 - Enable the settings you've just added (the slider next to it must be on)
 - Enable GPS
@@ -152,7 +153,7 @@ Go back to the Termux and `gpsd` repo folder:
 
 ***You need to run following commands as a root***
 
-- Start the gpsd background job as follows for UDP gpsdRelay server:
+- Start the `gpsd` background job as follows for UDP gpsdRelay server:
   ```
   ./gpsd-3.27.4~dev/gpsd/gpsd -n -N udp://127.0.0.1:12345&
   ```
@@ -167,15 +168,22 @@ The gpsd should now be running, do not worry if you see something like this, jus
 ```
 This is normal for network mode.
 
-2. Fully terminal approach.  
+**2. Fully terminal approach**
+
 This is especially useful when you want to automate everything by a script, without dealing with the external GUI apps.
+
+*Prerequisites:*
 
 - Install Termux API extension app: https://github.com/termux/termux-api, the apk can be found there in the releases. It is also available on F-Droid.
 
 - In the Android app settings, assign the location permission and allow constant access to the location, not only while the app is active.
   This will allow us to get the location data in the console. I also highly recommend disabling the notification for the app, as you can be
-  easily spammed by them when GPS signal is lost and while constantly querying for the location (which we will).
-  
+  easily spammed by them when GPS signal is lost and while constantly querying for the location (which we will in the *Vanilla `Termux:API`*).
+
+---
+
+*2.1 Vanilla `Termux:API`*
+
 - In the Termux console install Termux's CLI counterpart; termux-api:
   ```bash
   pkg install termux-api
@@ -200,17 +208,17 @@ This is especially useful when you want to automate everything by a script, with
 
 - Now, all we need is something that will translate the `termux-location` json to the NMEA sentences, so we can shove that to the gpsd.
   For that, I've vibe-coded (don't judge me, I was away from my PC back then, only with the smartphone in hand. And generating the script is
-  much more convenient than writing it on the touch screen ;) ) following python script `termux-api-gps-to-nmea-pty.py`. It can be found in the `scripts`
+  much more convenient than writing it on the touch screen ;) ) following python script `gps-to-nmea-pty.py`. It can be found in the `scripts`
   folder.
 
-- Get the script to the device and run it in the background `python termux-api-gps-to-nmea-pty.py&`. ***This MUST NOT be run as the root.***  
-  This script creates a link next to the its source file, to the pseudo terminal slave named `gps_vport`.
+- Get the script to the device and run it in the background `python gps-to-nmea-pty.py&`. ***This MUST NOT be run as the root.***  
+  This script creates a link next to the its source file to the pseudo terminal slave named `gps_vport`.
   The data printed on the pty slave end is the termux-location json output converted to the NMEA sentences.
   This device can be directly passed to the `gpsd` to read location data from there.
 
-  ***ALTHOUGHT THE SCRIPT DOES A CLEANUP ON EXIT, MAKE SURE THE LINK TO PTY DOES NOT EXIST BEFORE RUNNING THE SCRIPT***
+  ***ALTHOUGH THE SCRIPT DOES A CLEANUP ON EXIT, MAKE SURE THE LINK TO PTY DOES NOT EXIST BEFORE RUNNING THE SCRIPT***
 
-- Move to the gpsd repo root folder and run the gpsd. Point the source of location data as the pty link. ***This MUST BE run as a root***:
+- Move to the `gpsd`'s repo root folder and run the `gpsd`. Point the source of location data as the pty link. ***This MUST BE run as a root***:
   ```
   ./gpsd-3.27.4~dev/gpsd/gpsd -n -N <wherever your script is>/gps_vport&
   ```
@@ -219,7 +227,49 @@ This is especially useful when you want to automate everything by a script, with
   ./gpsd-3.27.4~dev/gpsd/gpsd -n -N /data/data/com.termux/files/home/gps_vport&
   ```
 
-- **Extra:** As we are talking about full in-console automation, the GPS can be enabled in console, by invoking:
+---
+
+*2.2 Native with permission assistance from `Termux:API`*
+
+This method has major advantage over the *Vanilla `Termux:API`* as it returns proper time of the GPS fix, which is nowhere to be found in data returned by
+`termux-location`. 
+Besides that, it has also added bonus (if you decide not to disable `Termux:API` app) of falling back to the *Vanilla `Termux:API`* method
+if it fails to talk with the location service natively.
+
+Here it is how it goes:
+
+- Make sure the `Termux:API` is installed and has proper permission. It is utilized here, just to bring location permission to base `Termux` app (to the shared user, to be exact).
+  At this point you can even disable the `Termux:API` add-on (if you are not using it for anything else) via `pm`. **Requires root access**:
+   ```
+   pm disable com.termux.api
+   ```
+   No wonder why further support for apps' shared users was dropped in Android :)
+
+- Get the script and the `py_and_svc_binds` to the device (this is a link to the repo's root `py-and-svc-binds`). You may copy it separately or even dereference the link but
+  it is highly recommended to use repo as a whole, as the links are relative to its layout. Besides it'll be much more convenient to switch to other version
+  by just checking out commits from repo on the target device, rather than copying this by hand every single time. You'll need `git` for that. In Termux installed by: `pkg install git`.
+
+- Run the script in the background `python gps-to-nmea-pty.py --gps-native&`. ***This MUST NOT be run as the root.***  
+  This script creates a link next to its source file, to the pseudo terminal slave named `gps_vport`.
+  The data printed on the pty slave end comes directly from the location service and are converted to the NMEA sentences.
+  This device can be directly passed to the `gpsd` to read location data from there.
+
+  ***ALTHOUGHT THE SCRIPT DOES A CLEANUP ON EXIT, MAKE SURE THE LINK TO PTY DOES NOT EXIST BEFORE RUNNING THE SCRIPT***
+
+- Move to the `gpsd` repo root folder and run the `gpsd`. Point the source of location data as the pty link. ***This MUST BE run as a root***:
+  ```
+  ./gpsd-3.27.4~dev/gpsd/gpsd -n -N <wherever your script is>/gps_vport&
+  ```
+  e.g. assuming the binary is running and is placed in the home folder `~` -> `/data/data/com.termux/files/home`:
+  ```
+  ./gpsd-3.27.4~dev/gpsd/gpsd -n -N /data/data/com.termux/files/home/gps_vport&
+  ```
+
+---
+
+**Extra:**
+
+As we are talking about full in-console automation, the GPS can be enabled in console, by invoking:
 
 ***Following commands MUST BE run as a root***
 
@@ -249,14 +299,14 @@ This never helped me out, but maybe it's just me. To make the binary more verbos
 ```
   ./gpsd-3.27.4~dev/gpsd/gpsd -D 4 -n -N <wherever your script is>/gps_vport&
 ```
-i.e. assuming the binary is running and is placed in the home folder `~` -> `/data/data/com.termux/files/home`:
+i.e. assuming the NMEA translation script is running and is placed in the home folder `~` -> `/data/data/com.termux/files/home`:
 ```
   ./gpsd-3.27.4~dev/gpsd/gpsd -D 4 -n -N /data/data/com.termux/files/home/gps_vport&
 ```
 Analogically for the network mode, I think you get the drill.
 
 #### Testing gpsd output
-To check if the gpsd is working properly, you can run the GPS client, that is build alongside the gpsd.
+To check if the gpsd is working properly, you can run the GPS client that is built alongside the gpsd.
 Simply run, in the gpsd repo root folder (while gpsd is running, duh):
 ```
 ./gpsd-3.27.4~dev/clients/cgps
@@ -363,15 +413,42 @@ $GPRMC,<redacted>.00,A,5000.<redacted>,N,01800.<redacted>,E,0.0,0.0,<redacted>,,
 If it is silent or you cannot connect, try to forcefully stop the gpsdRelay app in the settings, and then start it again.  
 When that fails as well, make sure GPS signal is reachable, the GPS is enabled and the app has proper permissions, along with access to the GPS in the background.
 
-#### Checking if the termux-api-gps-to-nmea-pty.py script is actually streaming NMEA sentences
+#### Checking if the gps-to-nmea-pty.py script is actually streaming NMEA sentences
 
-Simply call `cat gps_vport` on the pty link created by the script. If everything is right, and the
-location has been established, you should see NMEA sentences streamed over there. Like this:
+1. *termux-api*
+
+Simply call `cat gps_vport` (providing that script is already running), or call the script with flag `--stdout` and observe output on the pty link created by the script or stdout respectively.
+If everything is right, and the location has been established you should see NMEA sentences streamed over there. Like this:
 ```
 $GPRMC,<redacted>.00,A,5000.<redacted>,N,01800.<redacted>,E,0.0,0.0,<redacted>,,,A*5A
 $GPGGA,<redacted>.00,5000.<redacted>,N,01800.<redacted>,E,1,08,1.0,<redacted>,M,0.0,M,,*5C
 ```
 
-If this does not work, call `termux-location` to see if the communication between `termux-api-gps-to-nmea-pty.py`->`termux-location` works.
+If this does not work, call `termux-location` to see if the communication between `gps-to-nmea-pty.py`->`termux-location` works and whether `termux-api` console suite is even installed 
+(Install in Termux via `pkg install termux-api`).
 If `termux-location` fails to return location, make sure GPS signal is reachable, the GPS is enabled and Termux API apk is installed and has proper permissions,
 along with access to the GPS in the background.
+
+---
+
+2. *Native*
+
+While running the script with flag `--gps-native`, call `cat gps_vport`, or call the script with flag `--stdout` 
+and observe output on the pty link created by the script or stdout respectively. If everything is right, and the
+location has been established you should see NMEA sentences streamed over there. Like this:
+```
+$GPRMC,<redacted>.00,A,5000.<redacted>,N,01800.<redacted>,E,0.0,0.0,<redacted>,,,A*5A
+$GPGGA,<redacted>.00,5000.<redacted>,N,01800.<redacted>,E,1,08,1.0,<redacted>,M,0.0,M,,*5C
+```
+
+If you spotted:
+```
+[*] Native GPS unavailable/failed, falling back to Termux: <error message>
+```
+That means the native method failed.
+This may be caused by problem with bindings to location service in `py_and_sv_binds`. 
+In such case, make sure the link `py_and_sv_binds` next to the script points to the folder `py-and-svc-binds` on the repo root.
+If the link is correct update whole repo, making sure, you are using version matching your LineageOS release. See main README of this repo, for the release tagging strategy.
+
+If this is alright, make sure `Termux:API` app is installed. It is required, despite not accessing the location through it as it brings GPS permission to the base `Termux` app. 
+If the `Termux:API` is installed and it still does not work, make sure GPS signal is reachable, the GPS is enabled and `Termux:API` app has proper permissions assigned.

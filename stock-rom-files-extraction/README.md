@@ -1,7 +1,7 @@
-# Extracting stuff from the sock ROM of Fariphone 5
+# Extracting stuff from the stock ROM of Fairphone 5
 
-# Prerequistes
-Some linux distro, to build the sparse image extraction tool (on Windows try maybe mingw32-make from mingw compiler set, or msys2?).
+# Prerequisites
+Some Linux distro, to build the sparse image extraction tool (on Windows try maybe mingw32-make from mingw compiler set, or msys2?).
 
 Tools:
 ```
@@ -20,7 +20,7 @@ cd android-simg2img && git checkout a6fcc0f1c61b2aa5b55516829cd7d13dbfbacb91
 make
 ```
 
-2. Download the .zip of the ROM image from the Manufactureer site: https://support.fairphone.com/hc/en-us/articles/18896094650513-How-to-manually-install-Android-on-your-Fairphone  
+2. Download the .zip of the ROM image from the Manufacturer site: https://support.fairphone.com/hc/en-us/articles/18896094650513-How-to-manually-install-Android-on-your-Fairphone  
 Scroll down for chapter `Step 2: Find and download your package` over there.
 
 3. Unzip it. For Fairphone 5 it will be something like this:
@@ -33,7 +33,7 @@ unzip FP5-*-factory.zip
 cd FP5-*-factory/images
 ```
 
-5. Use sigm2igm from point _1._ to unpack the `super.img`
+5. Use simg2img from point _1._ to unpack the `super.img`
 ```bash
 android-simg2img/simg2img super.img super.unsparsed.img
 ```
@@ -50,7 +50,7 @@ odm_a.img  odm_b  product_a.img  product_b system_a.img  system_b  system_ext_a.
 ```
 Those are the target partitions of the ROM file.
 
-7. You can keep un-7zipping them, to get files from the respective paritions. Here for vendor:
+7. You can keep un-7zipping them, to get files from the respective partitions. Here for vendor:
 ```bash
 (mkdir vendor_a_unpacked && cd vendor_a_unpacked && 7z x ../vendor_a.img)
 ```

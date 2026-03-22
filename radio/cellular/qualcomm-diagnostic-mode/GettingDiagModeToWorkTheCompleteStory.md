@@ -1,14 +1,14 @@
 # The complete story of Qualcomm Diagnostic Mode on the Fairphone 5 and Android in general
 
-### How diag info gets to Android, or a tale of a great waste of my time
+### How the diag info gets to Android, or a tale of a great waste of my time
 
 To have an insight into diagnostic info from the Qualcomm chip, you need a proper kernel driver.
-In previous Android versions, which was running older kernel (according to the QCSuper repo up to 4.14), this was done
+In previous Android versions, which were running older kernel (according to the QCSuper repo up to 4.14), this was done
 via `/dev/diag` and was enabled by `CONFIG_DIAG_CHAR` in the kernel build config.
 
 In such a case qcsuper copies a bridge binary via adb to the device (32 bit ELF btw, it gave me a bit of headache, 
-but in the end it doesn't matter, as it was vain attempt on my side).
-When already on-site, the bridge binary opens the `/dev/diag` device and streams the diagnostic frames back
+but in the end it doesn't matter, as it was a vain attempt on my side).
+When already on-device, the bridge binary opens the `/dev/diag` device and streams the diagnostic frames back
 and forth via network socket.
 
 ---
@@ -20,13 +20,13 @@ architecture will come back later, but in a bit different form.
 Actually I even managed to port `DIAG_CHAR` driver from Fairphone 4 and get it insmoded on Fairphone 5, without kernel panicking.
 
 But well, long story short: it didn't work.  
-I mean the `qcsuper` copied the bridge (recompiled by myself for 64bit system). But it failed to enable the diag mode
-at first: there were problems with the frames lengths. Later, after addressing that, driver just didn't respond and crash.  
-4 days well spend (that, not including the LineageOS system build).
+I mean the `qcsuper` copied the bridge (recompiled by myself for 64 bit system). But it failed to enable the diag mode.
+At first, there were problems with the frames lengths. Later, after addressing that, driver just didn't respond and crash.  
+4 days well spent (that, not including the LineageOS system build).
 
 Okay - I thought to myself - maybe I need to set some props to change the USB composition. 
 This is how it worked on my previous phone (and previous phone indeed got the `/dev/diag` device,
- so I didn't take that porting part out of the blue. I promise.).
+ so I didn't pull that porting part out of thin air. I promise.).
 
 ---
 To wrap up the diag device matter.  
@@ -40,14 +40,14 @@ But I will get back to it in details furthermore.
 To get the diag mode working on my previous phone, or at least to enable QPST tools (https://qpsttool.com/) to work with the phone,
 the USB composition had to be switched to the proper mode.
 The phone in that mode reported itself as a bunch of the COM/serial ports on the host PC.
-The `qcsuper` README talks about this as well. So surely this must be it, right?
+The `qcsuper` README says about this as well. So surely this must be it, right?
 
 Well yes, but not entirely.
 
 The problem was that, no variant of the `sys.usb.config` found on the internet worked for Fairphone 5.
 The phone never reported more than a mere ADB port (if anything at all).
 
-Nevertheless those sites, are worth mention:
+Nevertheless those sites, are worth mentioning:
 
 - https://band.radio/diag
 - https://droidwin.com/how-to-boot-qualcomm-device-to-diag-mode-via-adb-commands/
@@ -61,15 +61,15 @@ Most prominently, for LineageOS it is kept in `/vendor/etc/init/hw/init.qcom.usb
 I found couple of promising hits.
 
 As it turns out, on the Fairphone 5 it is not as simple as just setting `sys.usb.config` properly.
-When reading the entries in the `init.qcom.usb.rc` one can notice, that more than just a single prop one is considered, while switching USB composition.
+When reading the entries in the `init.qcom.usb.rc` one can notice that more than just a single prop one is considered, while switching USB composition.
 
 Namely:
 
 - `sys.usb.controller`, which must be set to the proper device - `a600000.dwc3`
 - `sys.usb.configfs`, which must be set to `1`. At first it is indeed 1, but then it is changed to 2 when bootloaders are done bootloading.
-- `sys.usb.ffs.ready`, which must be set to `1`. It indicates, that `/dev/ffs-diag*/ep*` endpoints are available.
+- `sys.usb.ffs.ready`, which must be set to `1`. It indicates that `/dev/ffs-diag*/ep*` endpoints are available.
 
-Retrospectively may set by ***(Must be run as root)***:
+Here are concrete commands to set them properly ***(Must be run as root)***:
 
 - `setprop sys.usb.controller a600000.dwc3`
 - `setprop sys.usb.configfs 1`
@@ -86,10 +86,10 @@ The value of this prop in fact comes from `vendor.usb.controller`, as defined in
 And in turn `vendor.usb.controller` comes from file `/vendor/etc/init/hw/init.target.rc` of the LineageOS, and is hardcoded there to `a600000.dwc3`.
 After checking it against the device tree, it seemed to be correct. Didn't investigate why it was dummy in the first place, but don't really care.
 
-Btw. I wouldn't be myself, if I didn't check what happens if you use `dummy_udc.0` instead of the proper device. Long story short,
+Btw I wouldn't be myself, if I didn't check what happens if you use `dummy_udc.0` instead of the proper device. Long story short,
 kernel panic occurs and phone reboots (:
 
-Lovely! So, we are done, right? ...nope, not even close, as you probably may tell, by mere existence and abundance of the next chapters.
+Lovely! So, we are done, right? ...nope, not even close, as you probably may tell by mere existence and abundance of the next chapters.
 
 ### Diag router
 
@@ -105,7 +105,7 @@ the entry looks like this: `/vendor/bin/diag-router         u:object_r:vendor_di
 
 Soo, by pure deduction:<br/>
 On the `/vendor` partition, surely there is a `diag-router` binary, which has something to do with the diagnostics. 
-It does reminisces bridge from the qcsuper, when `/dev/diag` endpoint is present, doesn't it?
+It does reminiscent of bridge from the qcsuper, when `/dev/diag` endpoint is present, doesn't it?
 
 Soo, I was wrong in the first part - there is no such binary in the Lineage's vendor partition. Bummer.  
 But on the bright side, now I know that my guess pretty much nailed what this binary does ;)  
@@ -128,14 +128,14 @@ As it turns out, according to the README of that repo, you need to have enabled 
 
 to get the diag mode working. Thankfully LineageOS enables all of them by default in Fairphone 5.
 
-The first one responds for the diagnostic devices `/dev/ffs-diag*/ep*`. The one which we are particularly interested in, can be mounted like this:
+The first is responsible for the diagnostic devices `/dev/ffs-diag*/ep*`. The one which we are particularly interested in, can be mounted like this:
 ```
 mkdir -p /dev/ffs-diag
 mount -t functionfs diag /dev/ffs-diag -o uid=2000,gid=1000,rmode=0770,fmode=0660,no_disconnect=1
 ```
-Again inspired by vendor's .rc script `/vendor/etc/init/hw/init.qcom.usb.rc`.
+Again, above commands are inspired by vendor's .rc script `/vendor/etc/init/hw/init.qcom.usb.rc`.
 
-The two former ones (as far as I understand) are responsible for generating and sending the messages to the USB stack via USB gadget (kernel's way to enable userspace programs to send data via USB stack). The configfs can be mounted as follows:
+The two latter kconfig options (as far as I understand) are responsible for generating and sending the messages to the USB stack via USB gadget (kernel's way to enable userspace programs to send data via USB stack). The configfs can be mounted as follows:
 ```
 mkdir -p /config
 mount -t configfs none /config
@@ -179,7 +179,7 @@ The pcap file didn't grow in size either, so something was clearly wrong. But at
 When you encounter predicament like this, there is only one thing you can do in such a situation:
 ~~change chaotically all the parameters and pray. Then, when that does not work, cry in the corner~~.   
 Ekhem, I meant to say: reassess all the possibilities, then make an educated guess and test the most possible root cause based on your own experience
-(too shame I didn't have any experience in that department at that time XD).
+(too bad I didn't have any experience in that department at that time XD).
 
 So I made my uneducated guess, or more like 5th one (but at least I didn't cry in the corner).  
 I decided to glimpse into the original `/vendor` partition from the Fairphone, to look for the clues 
@@ -233,7 +233,7 @@ But back to our `-s` option. There were two possibilities what it does:
 
 And there is only one way to find out.  
 Enters socat (naturally you need to have it installed in Termux for that `pkg install socat`).  
-For a quick verification I put together a simple: TCP socket listener to TCP socket listener socat bridge, as luckily the upstream qcsuper is also
+For a quick verification I put together a simple: TCP socket listener to TCP socket listener socat bridge. Luckily the upstream qcsuper is
 capable of connecting to TCP server for diag data.
 
 Here is the socat command:
@@ -241,7 +241,7 @@ Here is the socat command:
 socat TCP-LISTEN:4321,reuseaddr,fork TCP-LISTEN:1234,reuseaddr,fork
 ```
 
-So in theory, now we can start diag server and point it to one end of socat, like this (given the .so libs copied from vendor are next to the `diag-router` binary)
+So in theory, now we can start diag router and point it to one end of socat, like this (given the .so libs copied from vendor are next to the `diag-router` binary)
 ***You need to run this command as root***:
 ```
 LD_LIBRARY_PATH=. ./diag-router -s 127.0.0.1:4321
@@ -262,16 +262,16 @@ Sooo, now we confirmed that we actually do not need the USB gadget at all. And e
 Lovely, but there is just a tiny tiny (it doesn't sound so good on paper :P) problem.
 
 The `diag-router` can be spawned only once and if it is terminated for any reason, and re-spawned later on, the diag protocol does not work and refuses to stream the frames anymore.
-Consequentially we either cannot terminate the socat's bridge in such a setup, cause the diag router won't reconnect to another socket, as it only does it at the start-up.
+Consequently we either cannot terminate the socat's bridge in such a setup, cause the diag router won't reconnect to another socket, as it only does it at the start-up.
 
-And this poses a security threat, as if that would going like this in the background, pretty much anyone can read diagnostic messages from the socket on your phone. And I don't know
+And this poses a security threat, as if it were to go like this in the background, pretty much anyone can read diagnostic messages from the socket on your phone. And I don't know
 how about you, but for me it is a major concern. 
 
-Besides that, it would be nice to have some more flexibility and be able to change the port, or listening address to not listen for everything all the time.
+Besides that, it would be nice to have some more flexibility, and be able to change the port or listening address, and when you are done to disable listening whatsoever.
 Ideally I'd like to have some local tty, to which qcsuper would connect, if I don't want to collect the frames externally. And if I feel like remote diag collection, close this
-tty and switch to the remote port. And finally if I don't need diag messages right now, I'd like to shut down the other end completely and just stay connected with `diag-router`.
+tty and switch to the network mode. And finally if I don't need diag messages right now, I'd like to shut down the other end completely and just stay connected with `diag-router`.
 
-With that being said, I ran some additional tests, and it turns out, that qcsuper happily accepts not only real ttyUSB but also pseudo terminal slave endpoint as well.  
+With that being said, I ran some additional tests and it turns out, that qcsuper happily accepts not only real ttyUSB but also pseudo terminal slave endpoint as well.  
 In general described functionality could be realized by spawning two socats, but it gets pretty cumbersome pretty quickly.
 
 ---
@@ -326,7 +326,7 @@ To switch between them/reopen, first close the active backend.
 ```
 ./diag-router-router.py --cmd close
 ```
-And then call variant of one of commands from the begining of this point according to your likings.
+And then call variant of one of commands from the begining of this point according to your liking.
 
 5. Connect to this via `qcsuper`:
 
@@ -363,8 +363,8 @@ The `qcsuper` side can be reopened at any time in any mode at demand.
 
 7. Profit
 
-I am also providing a nifty scripts which abstract out this whole struggle, either to use diag mode locally: `diag-on-loc.sh` and `diag-off-loc.sh`
-or via USB: `diag-on-usb.sh` and `diag-off-usb.sh`. But please remember if you make your mind and give a go for one family of scripts, the other won't
+I am also providing nifty scripts which abstract out this whole struggle, either to use diag mode locally: `diag-on-loc.sh` and `diag-off-loc.sh`
+or via USB: `diag-on-usb.sh` and `diag-off-usb.sh`. But please remember if you make your mind and give a go by one family of scripts, the other won't
 work until you restart the phone (`diag-router` must be re-ran with different arguments and after its termination diag session in system is lost for good).
 
 But for detailed instruction on their usage please see the main README of this folder.
