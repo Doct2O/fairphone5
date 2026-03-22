@@ -757,8 +757,8 @@ class AsyncLocationManager:
                     if fieldMask & HAS_ELAPSED_REALTIME_UNCERTAINTY_MASK:
                         _ndk_read_double(data_in, ctypes.byref(tmpDouble))
 
-                    _ndk_read_double(data_in, ctypes.byref(tmpDouble)) ; lng = tmpDouble.value
                     _ndk_read_double(data_in, ctypes.byref(tmpDouble)) ; lat = tmpDouble.value
+                    _ndk_read_double(data_in, ctypes.byref(tmpDouble)) ; lng = tmpDouble.value
 
                     result = {
                         "provider": p_provider,
