@@ -141,10 +141,11 @@ wm density "$CALC_DENSITY"
 echo "[+] Resolution set to ${NEW_W}x${NEW_H} and Density to ${CALC_DENSITY}."
 
 # --- Apply handful quirks ---
-# Hard set 60 fps, disable adaptive refresh rate
-# (could be 90, but I imagine) more displays support 60
-settings put system peak_refresh_rate 60
-settings put system min_refresh_rate 60
+# Hard set to max refresh rate possible (90 fps for Fairphone).
+# It used to be 60 fps, as I figure it would be most compatible across
+# external display, but since LineageOS 23.2 it started to drop connection on fixed 60 fps,
+# so here we are.
+settings put system min_refresh_rate Infinity
 # Allow virtual keyboard, even if the physical is connected
 settings put secure show_ime_with_hard_keyboard 1
 # Do not lock screen automatically as long as phone is charging from AC/USB

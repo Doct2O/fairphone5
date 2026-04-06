@@ -206,8 +206,10 @@ And here is the description of the rest of poked settings:
 
 But why change those from defaults?
 
-- ***refresh rate*** - Fairphone uses dynamic refresh rate by default,  
-                       when it switches, the connection with the external display may be dropped.
+- ***refresh rate*** - Fairphone uses dynamic refresh rate by default and when it switches,
+                       the connection with the external display may be dropped.
+                       We are using max possible here, as when I've set it to fixed 60 fps, the connection was
+                       dropping when in full screen and while the UI or the mouse cursor was vanishing/reappearing (LineageOS 23.2).
 - ***virtual keyboard*** - when you connect external USB device and it happens to mimic the keyboard  
                            (some mouses with extended or media keys), the virtual keyboard on the phone  
                            won't come up, leaving you without ability to type on the phone using the mouse.
@@ -228,7 +230,7 @@ What are correct values for those on Fairphone 5?
 
 - `peak_refresh_rate` and `min_refresh_rate`   
   To fix the refresh rate both must have the same value. And the correct ones are `60` and `90`.
-  Any other one is ignored and IIRC you are back to dynamic refresh rate.
+  Any other one (except `Infinity`) is ignored and IIRC you are back to dynamic refresh rate.
   To make the framerate fixed, invoke following commands:
     * 60 fps
       ```
@@ -239,6 +241,11 @@ What are correct values for those on Fairphone 5?
       ```
       settings put system min_refresh_rate 90
       settings put system peak_refresh_rate 90
+      ```
+    * Max possible
+      ```
+      settings delete system peak_refresh_rate
+      settings put system min_refresh_rate Infinity
       ```
     * Default:
       ```
@@ -333,18 +340,22 @@ What are correct values for those on Fairphone 5?
 
 ## Troubleshooting
 
-#### External screen is disconnecting when I jump between the apps/change view/scroll something
+#### External screen is disconnecting when I jump between the apps/change view/scroll something, the UI/mouse cursor shows in full screen mode
 
-Most likely the adaptive refresh rate is enabled. To confirm that, in dev options search for and enable `Show refresh rate`.
+Most likely the adaptive refresh rate is enabled or (since LineageOS 23.2) the max refresh rate is not enforced.
+To confirm that, in dev options search for and enable `Show refresh rate`.
 Now the number in the corner of display should appear (on the Phone's screen). It indicates current refresh rate.
 
 Do what you've done earlier, that caused the external screen to disconnect. 
-See if the fps counter changes and external display disconnects.
+See if the fps counter changes and external display disconnects or it is below max 90 fps for Fairphone (you may not even notice the 
+fps dipping in case of full screen problem).
 
-If so, apply following settings from the console for the time of using external display. ***Requires root access***:
+If so, apply following settings from the console for the time of using external display
+(can also be set from dev options via `Enforce max frame rate`, or something along those lines without root privileges).
+***Below commands require root access, though***:
 ```
-settings put system min_refresh_rate 60
-settings put system peak_refresh_rate 60
+settings delete system peak_refresh_rate
+settings put system min_refresh_rate Infinity
 ```
 To reset to normal, adaptive mode:
 ```
@@ -352,7 +363,7 @@ settings delete system peak_refresh_rate
 settings put system min_refresh_rate 0.0
 ```
 
-Remember to disable the FPS counter.
+Remember to disable the FPS counter afterwards.
 
 #### Despite using the `autores-fp5.sh` script I still see black framing around the image (image also may seem squished)
 

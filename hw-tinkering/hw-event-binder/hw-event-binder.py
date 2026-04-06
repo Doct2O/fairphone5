@@ -42,12 +42,15 @@ EXCLUDE_KEYWORDS = ["jack"]
 LONG_PRESS_TIME_SEC = 0.8
 
 # HDMI dispatcher and discovery config
-EXT_DISP_HW_ANCHOR = "qcom,msm-ext-disp"
+
+# First for direct HDMI, second for HDMI to DVI adapter
+EXT_DISP_HW_ANCHORS = ["qcom,msm-ext-disp", "ae00000.qcom,mdss_mdp/drm/card0"]
 EXT_DISP_DRM_STATUS_PATH = "/sys/class/drm/card0-DP-1/status"
 
 KRNL_EVENT_CHANGE_PREFIX = "change@"
-KRNL_EVENT_DP_CON_SENTENCE = "STATE=DP=1"
-KRNL_EVENT_DP_DIS_SENTENCE = "STATE=DP=0"
+# First for direct HDMI, second for HDMI to DVI adapter
+KRNL_EVENT_DP_CON_SENTENCES = ["STATE=DP=1", "status=connected"]
+KRNL_EVENT_DP_DIS_SENTENCES = ["STATE=DP=0", "status=disconnected"]
 
 # -------------- Security settings & authenticated communication
 # Arguments passing settings
@@ -263,6 +266,8 @@ class HardwareMonitor:
                 except:
                     return False
             return False
+        def _is_any_in_krnl_event(target_krnl_ev, search_list):
+            return any(substring in target_krnl_ev for substring in search_list)
 
         logging.info("Monitoring FP5 HDMI port state now...")
         was_connected = _is_display_physically_connected()
@@ -274,14 +279,15 @@ class HardwareMonitor:
             if self.kill_threads_r in readable:
                 break
             if krnl_raw_event := uevent_sock.recv(4096).decode('utf-8', errors='ignore'):
-                if not krnl_raw_event.startswith(KRNL_EVENT_CHANGE_PREFIX) or EXT_DISP_HW_ANCHOR not in krnl_raw_event:
+                # logging.info(f"{krnl_raw_event}")
+                if not krnl_raw_event.startswith(KRNL_EVENT_CHANGE_PREFIX) or not _is_any_in_krnl_event(krnl_raw_event, EXT_DISP_HW_ANCHORS):
                     continue # quick bail out, to avoid acquiring wake lock ON EVERY SINGLE EVENT
 
                 with asb.acquire_wake_lock() as wl: # Acquire wake lock as soon as possible
                     new_conn_state = was_connected
-                    if KRNL_EVENT_DP_CON_SENTENCE in krnl_raw_event:
+                    if _is_any_in_krnl_event(krnl_raw_event, KRNL_EVENT_DP_CON_SENTENCES):
                         new_conn_state = True
-                    if KRNL_EVENT_DP_DIS_SENTENCE in krnl_raw_event:
+                    if _is_any_in_krnl_event(krnl_raw_event, KRNL_EVENT_DP_DIS_SENTENCES):
                         new_conn_state = False
                     if new_conn_state != was_connected:
                         # Debounce wake-up flicker. Increase sleep value if you get double events.
