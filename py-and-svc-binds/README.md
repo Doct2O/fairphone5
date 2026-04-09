@@ -353,7 +353,7 @@ binders transaction only, unfortunately in the end it is unable to dump what is 
 Next, I tried to dump the data by combining the ioctl detection, with dumping `/proc/<pid>/maps` and `/proc/<pid>/mem`, of process in question (hell yeah, root access!).
 But when I dug a bit deeper, the binder's transaction format turned out to be next level of a... let's say creative approach to structure data (reading: hell no, I am not parsing that).
 
-Lastly, before the grant salvation and revelation, I tried Firda, all-having instrumentation toolkit. Which for my little surprise refused to work with LineageOS.
+Lastly, before the grant salvation and revelation, I tried Frida, all-having instrumentation toolkit. Which for my little surprise refused to work with LineageOS.
 I don't even remember the exact reason, I believe something with aidl definition mismatch. And c'mon I am full grown adult, I am able to parse my hexdumps, alright. So I kept looking.
 
 A while later, and probably after already having 3 crypto-miners on my device, along with five RATs running in background (heck yeah, root access!) I finally found, THE tool.

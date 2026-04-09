@@ -92,6 +92,9 @@ Luckily the Fairphone 5 meets both of those criteria.
 
 The `diag-router-router.py` allows only one connected client at once on both sides of the socket, so please keep that in mind, if your connection has been rejected.
 
+If the scripts does not work for you for seemingly no reason, the path from which you are invoking them may be too long to create socket there.
+Move the scripts to place with shorter path (and no, symlink in shorter path won't do the job here).
+
 ## Prerequisites
 
 - Termux
