@@ -1,11 +1,16 @@
 # Display port/HDMI over USB-C on LineageOS
 
-As funny as it may sound either LineageOS or the Fairphone itself (but pretty sure, the former,  
+~~As funny as it may sound either LineageOS or the Fairphone itself (but pretty sure, the former,  
 because IIRC it worked out of the box on the stock ROM) is really fussy about how, what, and in  
-what order is plugged into the USB-C port, while trying to use the external display.
+what order is plugged into the USB-C port, while trying to use the external display.~~
 
-Nevertheless after going borderline insane, I think I managed to determine the proper 
-way to plug in stuff to make LineageOS happy and which works _pretty_ reliably.
+~~Nevertheless after going borderline insane, I think I managed to determine the proper 
+way to plug in stuff to make LineageOS happy and which works _pretty_ reliably.~~
+
+It seems that the fussiness of the LineageOS has been recently fixed, now one does not longer
+need to lock and unlock the screen to get external screen working. Also this preposterous juggling
+of the connected devices in the proper order (mouse, charger and the HDMI cable) seems to be fixed as well.
+**Good job LineageOS crew!**
 
 # Prerequisites
 
@@ -29,20 +34,20 @@ All of those three ports were functional at once in such a configuration:
 
 ### Other hardware
 
-Once I've connected the external display as described in following sections, the type of the splitter,
-length of the cable (and what not) does not seem to make much of a difference.
+Once I've connected the external display ~~as described in following sections~~ (no longer true: any order works now),
+the type of the splitter, length of the cable (and what not) does not seem to make much of a difference.
 
 It also streamed sound to the display (here you need to make sure the cable supports that, though), hell, it even
 worked via the HDMI->DVI adapter.
 
-So, at least in that regard the LineageOS is not too picky :)
+~~So, at least in that regard the LineageOS is not too picky :)~~
 
 # Rootless section
 
 All instructions described in following sub-chapters, should work on non-rooted LineageOS on Fairphone 5.
 
-Be warned, though. The rootless experience on the LineageOS is pretty underwhelming, ~as it appears to only be capable of mirroring the screen
-in exact the same resolution (or aspect ratio, rather) as the phone's display.~ Now the resolution may be changed, but effectively it does not change much
+Be warned, though. The rootless experience on the LineageOS is pretty underwhelming, ~~as it appears to only be capable of mirroring the screen
+in exact the same resolution (or aspect ratio, rather) as the phone's display.~~ Now the resolution may be changed, but effectively it does not change much
 with black enveloping area :P
 
 Stock Android's settings does not help here either, as there, you can at most change the orientation of the streamed image,
@@ -52,50 +57,53 @@ As far as I can tell the system processes the output image in such a way, that i
 of the external display's resolution.  
 And you guessed it, if the ratio is far off, this results in a nasty black filling-up-space displayed around the proper image.
 
-Nevertheless to get it working, closely follow steps in the next sections. 
+~~Nevertheless to get it working, closely follow steps in the next sections.~~
 
-***NOTE: If you lost the external screen image, unplug everything from the adapter and re-iterate the steps.***
+***NOTE: If you lost the external screen image, unplug everything from the adapter and re-iterate the steps. Now it is much rarer than previously, though,
+   mostly when you unplug power from the adapter.***
 
-## External display solo
+# None of the info in following sections, up to the "Root section" is relevant anymore. Seems like LineageOS folks sorted it out. Kudos!
 
-1. When the phone's screen is unlocked; plug in the HDMI cable to both the external display and splitter
-   (whether the cable is plugged in first on the side of splitter or display, does not matter here).
-2. Confirm the mirroring in the dialog that should pop up in the system
-3. Lock the screen
-4. Unlock the screen 
+## ~~External display solo~~
 
-And voila! The mirrored image on your external screen should appear in less than 10 seconds.
-If not, repeat the steps `3.` - `4.` with longer pause between them.
+1. ~~When the phone's screen is unlocked; plug in the HDMI cable to both the external display and splitter
+   (whether the cable is plugged in first on the side of splitter or display, does not matter here).~~
+2. ~~Confirm the mirroring in the dialog that should pop up in the system~~
+3. ~~Lock the screen~~
+4. ~~Unlock the screen~~
 
-If you still have problems, make sure there are no wake locks active, as the trigger requires deep sleep engaged between points `3.` and `4.`.
-To verify that, invoke. **Requires root access**:
+~~And voila! The mirrored image on your external screen should appear in less than 10 seconds.
+If not, repeat the steps `3.` - `4.` with longer pause between them.~~
+
+~~If you still have problems, make sure there are no wake locks active, as the trigger requires deep sleep engaged between points `3.` and `4.`.
+To verify that, invoke. **Requires root access**:~~
 ```
 dumpsys power | grep -i 'wake locks' -A 10
 ```
-If it says `Wake Locks: size=0` you are good to try again. If not, stop the apps on the list holding the wake lock 
-(`DOZE_WAKE_LOCK` held by `dream:doze` is freed automatically, wait a while for it and do not kill app holding it).
+~~If it says `Wake Locks: size=0` you are good to try again. If not, stop the apps on the list holding the wake lock 
+(`DOZE_WAKE_LOCK` held by `dream:doze` is freed automatically, wait a while for it and do not kill app holding it).~~
 
 
-## External display with charging
+## ~~External display with charging~~
 
-If your splitter also has a port for charging (usually USB-C), plug in the charger ***FIRST***. 
-And when battery starts to charge, follow steps in section `External display solo`.
+~~If your splitter also has a port for charging (usually USB-C), plug in the charger ***FIRST***. 
+And when battery starts to charge, follow steps in section `External display solo`.~~
 
-If done the other way around, the phone may report dirt or moisture in the port, and neither
-the charging nor any external USB device will work.
+~~If done the other way around, the phone may report dirt or moisture in the port, and neither
+the charging nor any external USB device will work.~~
 
-## External display with other USB devices
+## ~~External display with other USB devices~~
 
-If your splitter aside the HDMI port has also USB port, and
+~~If your splitter aside the HDMI port has also USB port, and
 you want to use that for some external USB device, follow the steps in `External display solo` .
-Once the screen is already mirrored plug in the other USB devices.
+Once the screen is already mirrored plug in the other USB devices.~~
 
-## External display with other USB devices and charging
+## ~~External display with other USB devices and charging~~
 
-If your splitter aside the HDMI port has also USB port (one not for charging) and the other -
+~~If your splitter aside the HDMI port has also USB port (one not for charging) and the other -
 usually USB-C - destined for charging, and you want to make use of all of them. Do as follows:  
 first perform the steps in `External display with charging` and once the screen is already mirrored, plug in the
-other USB devices.
+other USB devices.~~
 
 # Root section
 
@@ -104,7 +112,7 @@ other USB devices.
 Normally, I'd recommend screen extension and desktop mode, enabled by tweaking system settings.
 
 But it seems to be broken on LineageOS;   
-the external display loves to disconnect (fixable with setting fixed framerate, see further on),
+the external display loves to disconnect (fixable with setting constant frame rate, see further on),
 the title bar of the apps does not disappear in the full screen mode,
 and to top it off, mouse cursor tends to jump back to the phone's screen (fixable with screen rotation).  
 But most importantly: the Android apps struggles a lot, as most of them were never developed with
@@ -139,7 +147,7 @@ For details see chapter `My icons are all messed up on the main screen/I've lost
 
 Second off, in the `scripts` subdir you can find script named `autores-fp5.sh`
 which detects the external's display resolution (and it presence for that matter)
-and automatically calculates optimal resolution and DPI to set and the applies them.
+and automatically calculates optimal resolution and DPI to set and then applies them.
 
 ***Mind ya, the `autores-fp5.sh` by default completely turns off the phone's screen, so don't be alarmed; that's normal.
 It still will react to touch but it is blacked-out to spare the screen lifespan.
@@ -187,7 +195,7 @@ the phone will start to use this resolution as a native now on.
 And if we get the resolution and DPI just right regarding the aspect ratio of  
 the external display, we will eliminate the frames completely or severely minimize them.
 
-It all depends on how the app you are currently using displays stuff.
+It all depends on how the app you are currently using, displays stuff.
 
 The `reset` command also resets the DPI to default 480. To change that manually,
 call `wm density <new DPI>` (for example if navigation buttons are missing, or icons size is inappropriate).

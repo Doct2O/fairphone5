@@ -42,7 +42,8 @@ Less logic == easier maintenance.
 * `doc` - Documentation for the adjacent HW, and the phone itself. Most prominently Fairphone's 5 service manual with complete schematic in it.
 * `radio` - Radio-Frequency related stuff. For now: Wi-Fi, GPS and cellular.
 * `stock-rom-files-extraction` - Description how to extract files from the stock Fairphone 5 ROM.
-* `hdmi-over-usb-c` - Description how to get working the screen mirroring on the external display, via USB-C on LineageOS. It is surprisingly finicky.
+* `hdmi-over-usb-c` - Description how to get working the screen mirroring on the external display, via USB-C on LineageOS. ~~It is surprisingly finicky.~~ 
+                      Less so finicky now, but still has its quirks.
 * `hw-tinkering` - Instructions on reconfiguring, messing and interfacing with the hardware, not necessarily as makers intended to :)
 * `py-and-svc-binds` - Python module with bindings to native Android services and to `libbinder_ndk.so`. Depended scripts sym-links to it, 
   so if you decide to use them outside the repo (**HIGHLY UNRECOMMENDED**) you need to dereference the symlink. Also thorough description of the whole `binder` mess in Android.
