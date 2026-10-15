@@ -372,9 +372,21 @@ def toggle_torch(key: str, was_off: bool, was_locked: bool):
         # Toggle OFF: Allowed if interaction started while screen was Off or Locked
         if is_on and (was_off or was_locked):
             asb.set_torch_mode(False)
+            # This has been set automatically by the com.android.systemui
+            # on any, even foreign change of the torch state. But since
+            # LineageOS 24, the systemui fails to listen on external changes
+            # of the torch causing this setting not being up-to-date.
+            # And as we rely on this being fresh, let's set it here by ourselves.
+            asb.set_settings_torch_on(False)
         # Toggle ON: Only if display was truly Off at moment of initial press
         elif not is_on and was_off:
             asb.set_torch_mode(True)
+            # This has been set automatically by the com.android.systemui
+            # on any, even foreign change of the torch state. But since
+            # LineageOS 24, the systemui fails to listen on external changes
+            # of the torch states causing this setting not being up-to-date.
+            # And as we rely on this being fresh, let's set it here by ourselves.
+            asb.set_settings_torch_on(True)
     except Exception as e:
         logging.error(f"Torch control failure: {e}")
 
@@ -386,7 +398,7 @@ def run_hdmi_cmd(key: str, psk_cmds: bytes, pipe: Connection, cmd: List[str]):
          logging.error(f"Failed to send command for HDMI event {key}: {e}")
 
 def run_longpress_btn_cmd(key: str, psk_cmds: bytes, pipe: Connection, cmd: List[str], was_off: bool, was_locked: bool):
-    logging.info(f"Command to send to execute on Button event: {cmd}, Key: {key}")
+    logging.info(f"Command to send to execute on Button event: {cmd}, Key: {key}, Was off: {was_off}, Was locked: {was_locked}")
     # Rule: Trigger commands if screen was off, or if it's Power on the lockscreen.
     if was_off or (was_locked and key == "POWER"):
         try:
@@ -415,7 +427,7 @@ HDMI OPTIONS:
 
 TECHNICAL SPECS:
   • Long-press Timeout: {LONG_PRESS_TIME_SEC}s
-  • HDMI Anchor:        {EXT_DISP_HW_ANCHOR}
+  • HDMI Anchor:        {EXT_DISP_HW_ANCHORS}
   • HDMI Status Path:   {EXT_DISP_DRM_STATUS_PATH}
   • Excluded Devices:   Keywords {EXCLUDE_KEYWORDS}
 

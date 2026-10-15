@@ -248,3 +248,6 @@ Make sure the `hw-event-binder.py` script is the last thing executed in the init
 
 The only downside I can think of regarding this method is that, the phone must be unlocked for the first time after the reboot, to get the auto-start going.
 By extension it won't save you if you screw up so bad, that you won't be able to unlock the phone for the first time.
+
+New one popped up: Since the advent of LineageOS 24, the flashlight widget no longer detects external changes of flashlight in a proper manner.
+When one changes the torch settings outside it, the widget is completely unresponsive, until previous state of the torch has been restored.

@@ -47,8 +47,10 @@ worked via the HDMI->DVI adapter.
 All instructions described in following sub-chapters, should work on non-rooted LineageOS on Fairphone 5.
 
 Be warned, though. The rootless experience on the LineageOS is pretty underwhelming, ~~as it appears to only be capable of mirroring the screen
-in exact the same resolution (or aspect ratio, rather) as the phone's display.~~ Now the resolution may be changed, but effectively it does not change much
+in the exact same resolution (or aspect ratio, rather) as the phone's display.~~ Now the resolution may be changed, but effectively it does not change much
 with black enveloping area :P
+Also the PC desktop mode has been added, which creates completely separate workspace to the main screen. That being said, as is now is completely
+broken since the apps fail to start there.
 
 Stock Android's settings does not help here either, as there, you can at most change the orientation of the streamed image,
 by flipping it by 90, 180 and 270 degrees.
@@ -59,7 +61,7 @@ And you guessed it, if the ratio is far off, this results in a nasty black filli
 
 ~~Nevertheless to get it working, closely follow steps in the next sections.~~
 
-***NOTE: If you lost the external screen image, unplug everything from the adapter and re-iterate the steps. Now it is much rarer than previously, though,
+***NOTE: If you lost the external screen image, unplug HDMI plug from the adapter and re-iterate the steps. Now it is much rarer than previously, though,
    mostly when you unplug power from the adapter.***
 
 # None of the info in following sections, up to the "Root section" is relevant anymore. Seems like LineageOS folks sorted it out. Kudos!
@@ -109,17 +111,22 @@ other USB devices.~~
 
 ***Obviously you'll need root access to invoke following commands.***
 
-Normally, I'd recommend screen extension and desktop mode, enabled by tweaking system settings.
+Normally, I'd recommend screen extension and desktop mode (much welcome addition since LineageOS 24, now being available out of the box). ~~enabled by tweaking system settings.~~
 
-But it seems to be broken on LineageOS;   
-the external display loves to disconnect (fixable with setting constant frame rate, see further on),
-the title bar of the apps does not disappear in the full screen mode,
-and to top it off, mouse cursor tends to jump back to the phone's screen (fixable with screen rotation).  
-But most importantly: the Android apps struggles a lot, as most of them were never developed with
-desktop mode in mind in the first place.
+But it seems to still be broken on LineageOS;   
+The apps completely fail to start there.
+And other nitpick is that, the main screen still has to be constantly enabled and unlocked, for the extended one to work.
 So for now it is no go.  
-But be as it may, I paste the settings to change via the terminal, if you'd like to test the desktop mode yourself.
-For them, go to the very end of this document.
+~~the external display loves to disconnect (fixable with setting constant frame rate, see further on),~~
+~~the title bar of the apps does not disappear in the full screen mode,~~
+~~and to top it off, mouse cursor tends to jump back to the phone's screen (fixable with screen rotation).~~
+~~But most importantly: the Android apps struggles a lot, as most of them were never developed with~~
+~~desktop mode in mind in the first place.~~
+~~But be as it may, I paste the settings to change via the terminal, if you'd like to test the desktop mode yourself.~~
+~~For them, go to the very end of this document.~~
+
+~~But be as it may, I paste the settings to change via the terminal, if you'd like to test the desktop mode yourself.~~
+~~For them, go to the very end of this document.~~
 
 ## Advisory and word of warning
 
@@ -140,7 +147,7 @@ with external display is lost. See `hw-tinkering/hw-event-binder/README.md` path
 
 ## autores-fp5.sh
 
-**MAJOR WARNING. Since recent update of LineageOS, calling the `autores-fp.sh` will cause loss of the main screen layout and icons for good.
+**MAJOR WARNING. Since recent update of LineageOS (holds true in 24), calling the `autores-fp.sh` will cause loss of the main screen layout and icons for good.
 I haven't found a proper workaround for that yet, the only option is to backup launcher's settings on `/data` partition and bring them back,
 however I cannot assure that will work reliably in general, thus I am not incorporating this in scripts by default.
 For details see chapter `My icons are all messed up on the main screen/I've lost my main screen layout, after resetting to default settings`**
@@ -150,7 +157,7 @@ which detects the external's display resolution (and it presence for that matter
 and automatically calculates optimal resolution and DPI to set and then applies them.
 
 ***Mind ya, the `autores-fp5.sh` by default completely turns off the phone's screen, so don't be alarmed; that's normal.
-It still will react to touch but it is blacked-out to spare the screen lifespan.
+It still will react to touch but it is blacked-out to spare the screen lifespan. And that's one of the things that the desktop extension lacks.
 If you need to urgently turn it back on again, just lock and unlock the phone.***
 
 Copy the script to the phone and then - once the mirroring is already working - run it as follows. ***Must be run as a root***:
@@ -422,11 +429,12 @@ am force-stop com.android.launcher3
 You may add those two last calls, as an additional commands to be run on the HDMI cable disconnect in script `hw-event-binder.py`, after running `reset-fp5-defaults.sh`.
 See `hw-tinkering/hw-event-binder/README.md` path relative to repo's root, for details.
 
-## Desktop mode and screen extending on LineageOS
+## Section below is no longer relevant. As the LineageOS since version 24, supports extended desktop mode out-of-the-box. It is still non-functional, though.
+## ~~Desktop mode and screen extending on LineageOS~~
 
-***Both the desktop mode and screen extending is broken in a many places on LineageOS. Please see introduction to `Root section` to see what's wrong with it.***
+***~~Both the desktop mode and screen extending is broken in a many places on LineageOS. Please see introduction to `Root section` to see what's wrong with it.~~***
 
-To enable somewhat functional extended desktop mode, invoke following commands as a root:
+~~To enable somewhat functional extended desktop mode, invoke following commands as a root:~~
 ```
 settings put global force_desktop_mode_on_external_displays 1
 settings put global force_resizable_activities 1
@@ -435,9 +443,9 @@ settings put global enable_desktop_windowing_mode 1
 settings put global ignore_orientation_request 1
 settings put global policy_control "immersive.full=*"
 ```
-***Changing those settings requires reboot.***
+***~~Changing those settings requires reboot.~~***
 
-To disable:
+~~To disable:~~
 ```
 settings put global force_desktop_mode_on_external_displays 0
 settings put global force_resizable_activities 0
@@ -446,7 +454,7 @@ settings put global enable_desktop_windowing_mode 0
 settings put global ignore_orientation_request 0
 settings put global policy_control null*
 ```
-***Changing those settings requires reboot.***
+***~~Changing those settings requires reboot.~~***
 
-Trivia: by mere changing value of those settings, new options
-        representing some of them shall appear in the dev menu :)
+~~Trivia: by mere changing value of those settings, new options~~
+          ~~representing some of them shall appear in the dev menu :)~~

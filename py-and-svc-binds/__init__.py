@@ -403,6 +403,11 @@ def is_torch_on():
         return True
     return False
 
+def set_settings_torch_on(on: bool):
+    command = ["/system/bin/settings", "put", "secure", "flashlight_enabled", "1" if on else "0"]
+    result = subprocess.run(command, capture_output=True, text=True)
+    return result.returncode
+
 def set_torch_mode(turn_on: bool, camera_id: str = "0", package_name: str = "com.termux"):
     CLASS_NAME = "android.hardware.ICameraService"
     METHOD_ID = 16 # setTorchMode

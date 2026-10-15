@@ -135,7 +135,7 @@ or
 ```
 # For access from outside, just use IPv4 address of Wi-Fi adapter 
 # accessible via local network, instead of 127.0.0.1, 
-./diag-on-loc.sh --socket 127.0.0.1:54321
+./diag-on-loc.sh --sock 127.0.0.1:54321
 ```
 
 If you change your mind, you can simply switch between them just by running the script again, with different arguments.

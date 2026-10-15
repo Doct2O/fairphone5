@@ -9,7 +9,12 @@ knitting together the ioctl structures to be sent via BINDER_WRITE_READ. Or even
 
 # But why bother?
 
-A short and unsatisfactory answer: to turn on the flashlight, so Android is aware of that (sync with the widget in UI). Totally worth it (not really).
+A short and unsatisfactory answer: to turn on the flashlight ~~, so Android is aware of that (sync with the widget in UI)~~.  
+Funnily enough, since the LineageOS 24, the flashlight widget, or rather the `com.android.systemui` no longer detects toggling of the
+flashlight externally properly. If the flashlight status changed behind its back, the widget becomes totally unresponsive unless the torch
+state is restored, to what it expects.  
+Totally worth it (not really, and since LineageOS 24 hundredfold).
+
 To read the full story behind this, see `README.md` next to the `hw-event-binder.py` script in the folder `hw-tinkering/hw-event-binder/`. As a matter of
 fact that script uses the module from here, to achieve whatever it does.
 
@@ -226,6 +231,10 @@ You don't like it? Don't complain, patch it yourself.
 ### System Features: Torch, Power, & Display
 
 * **`is_torch_on`**: Screws the rules and just calls `settings` binary to retrieve `flashlight_enabled` value to determine the current state of the torch
+* **`set_settings_torch_on`**: Similarly to the function above, calls `settings` to set `flashlight_enabled` secure setting, to book keep its current state
+  for future torch toggling. It was absent before LineageOS 24, but now the `com.android.systemui` fails to detect external torch state changes. And formerly
+  it was refreshing this settings. Now we must do it manually by ourselves. As a stinky bonus, if the torch state is different than `com.android.systemui` left it,
+  the flashlight widget is completely unresponsive.
 * **`is_torch_on_highly_unstable_unmantained`**: The name works here like a rattle for rattle snake. Do not use anywhere it if you are sane. I left it, just to keep an example of
   talking to the `ActivityManager`, `ContentProvider` and in the end retrieving settings. **I AM NOT GOING TO UPDATE THIS FUNCTION**, so it may do whatever to your system on the call.
   See ~Elaboration~ `Rant on the binds stability` chapter for details.
