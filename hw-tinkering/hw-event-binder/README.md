@@ -65,11 +65,12 @@ Well, it is mostly my fault, as I added some heavies to this lift called script 
   In the end it turned out that it is much easier to start as a regular user and then elevate to root and delegating commands execution to the other side of the script, which runs as a regular user,
   than playing with the user context reconstitution. On the flip side, to do this other way around, we just add `su` to the command we want to execute and we are done.
 
-- **Fourthly**, there is another problem; if you screw up the display settings, when messing with external display, you may have hard time resetting them to the defaults on unreadable
+- **Fourthly**, ~~there is another problem; if you screw up the display settings, when messing with external display, you may have hard time resetting them to the defaults on unreadable
   screen. And since this script runs in background anyways while listening for the buttons, it may as well be listening on the external HDMI cable connection/disconnection
   (via kernel events socket) and reset display settings automatically, when the cable is disconnected.
   In fact it is capable of starting any script on connection/disconnection, but in my case I am running display settings reset script 
-  from `hdmi-over-usb-c/scripts/reset-fp5-default.sh` relative to this repo's root.
+  from `hdmi-over-usb-c/scripts/reset-fp5-default.sh` relative to this repo's root.~~  
+  No longer a problem, as since some update of LineageOS 24, the desktop mode on external display works out of the box. See `README` in folder `hdmi-over-usb-c` relative to repo's root.
 
 - **Fifthly and lastly**, by splitting the script into root hardware listener, and regular user executor. You introduce a security gap. For example, mere write to whatever the user side
   uses to listen on for commands to execute can escalate from arbitrary write to arbitrary code execution. So no good. This had to be addressed and secured ideally by tightening the
@@ -161,13 +162,11 @@ But this is a task for the reader :)
 - volume down for Wi-Fi traffic capture
 - power button for camera. I am taking advantage of simultaneous unlock via fingerprint here, to get
   the camera ready right away after unlock.
-- HDMI cable disconnect for resetting to default settings of the display
 ```bash
 python hw-event-binder.py \
                 --vol-up-torch \
                 --vol-down-cmd '/data/data/com.termux/files/home/aircrack-ng/capture-toggle.sh' \
-                --power-cmd 'su -c "/system/bin/am start -a android.media.action.IMAGE_CAPTURE"' \
-                --hdmi-dis-cmd 'su -c "/data/data/com.termux/files/home/fairphone5/hdmi-over-usb-c/scripts/reset-fp5-defaults.sh"'
+                --power-cmd 'su -c "/system/bin/am start -a android.media.action.IMAGE_CAPTURE"'
 ```
 
 Remember, for convenience, each bound command is spawned in a shell, so all constructs like logical and `&&`, or `||`, pipes `|` or redirection to files works just fine directly
@@ -226,7 +225,6 @@ nano /data/data/com.termux/files/home/.termux/boot/init.sh
                 --vol-up-torch \
                 --vol-down-cmd '/data/data/com.termux/files/home/aircrack-ng/capture-toggle.sh' \
                 --power-cmd 'su -c "/system/bin/am start -a android.media.action.IMAGE_CAPTURE"' \
-                --hdmi-dis-cmd 'su -c "/data/data/com.termux/files/home/fairphone5/hdmi-over-usb-c/scripts/reset-fp5-defaults.sh"' \
         >/dev/null 2>&1 # Do not care about logs. We can always re-run it later manually if something is wrong.
 ```
 
@@ -242,7 +240,7 @@ Now your `init.sh` script should be invoked on the boot, alongside all the comma
 
 ## Caveats
 
-Make sure the `hw-event-binder.py` script is the last thing executed in the init script, as it never exits blocking the execution of subsequent commands.
+Make sure the `hw-event-binder.py` script is the last thing executed in the init script, as it never exits, blocking the execution of subsequent commands.
 
 ## Limitations
 

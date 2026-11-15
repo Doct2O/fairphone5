@@ -22,6 +22,7 @@ import hmac
 import hashlib
 
 from concurrent.futures import ThreadPoolExecutor
+from contextlib import contextmanager
 from typing import Dict, List, Optional, Callable, Any
 from multiprocessing.connection import Connection
 
@@ -75,7 +76,7 @@ def PBKDF2(password, salt, len_bytes=PKDF2_SZ, iterations=PBKDF2_ITERS):
 # I was going to keep the [root]->[user executor] pipe unauthorized,
 # but then I realized, this may cause Arbitrary Write to ACE escalation with user privileges -_-
 # So here is overly complex, thread safe and aware (hello there python 3.14)
-# implementation of security protocol with authenticated content resilient for reply attacks.
+# implementation of security protocol with authenticated content resilient for replay attacks.
 thread_auth_send_context = threading.local()
 def gen_auth_thr_cmd(cmd, psk):
     if not hasattr(thread_auth_send_context, "thread_key"):
@@ -105,15 +106,13 @@ class ThreadKeyNonceTracker:
     def set_key(self, tid, key):
         with self._lock_key:
             self._key[tid] = key
-    def get_nonce(self, tid):
+    @contextmanager
+    def locked_nonce_session(self, tid):
         with self._lock_nonce:
-            return self._nonce.get(tid, 0)
-    def increment_nonce(self, tid):
-        with self._lock_nonce:
-            # This is now safe from race conditions
-            current = self._nonce.get(tid, 0)
-            self._nonce[tid] = current + 1
-        return current
+            current_nonce = self._nonce.get(tid, 0)
+            yield current_nonce
+            self._nonce[tid] = current_nonce + 1
+        
 thread_key_nonce_tracker = ThreadKeyNonceTracker()
 def get_auth_thr_cmd(raw_data, psk):
     if len(raw_data) > MAX_CMD_DATA_SZ:
@@ -123,23 +122,24 @@ def get_auth_thr_cmd(raw_data, psk):
     thread_id, raw_data = raw_data[:PKDF2_SZ], raw_data[PKDF2_SZ:]
     cmd_pickled, sig    = raw_data[:-SCRIPT_WISE_HASH_ALGO_HEX_DIG_SZ], raw_data[-SCRIPT_WISE_HASH_ALGO_HEX_DIG_SZ:]
 
-    # Way to quickly bail out, before we calculate computation heavy PBKDF.
-    # This may introduce side channel attack, for guessing nonce. But get real,
-    # even if attacker has nonce, we still have signed packet. This way is by far less DoS prone.
-    # Plus if the nonce is checked after the signature, it is still prone to side channel, but with heavy computation beforehand.
-    if nonce != thread_key_nonce_tracker.get_nonce(thread_id):
-        raise Exception("Received invalid nonce for a command. Reply attack?")
+    # The nonce is incremented automatically when exiting the with block without the exception raised.
+    with thread_key_nonce_tracker.locked_nonce_session(thread_id) as nonce_local:
+        # Way to quickly bail out, before we calculate computation heavy PBKDF.
+        # This may introduce side channel attack, for guessing nonce. But get real,
+        # even if attacker has nonce, we still have signed packet. This way is by far less DoS prone.
+        # Plus if the nonce is checked after the signature, it is still prone to side channel, but with heavy computation beforehand.
+        if nonce != nonce_local:
+            raise Exception("Received invalid nonce for a command. Replay attack?")
 
-    thread_key_cached = thread_key_nonce_tracker.get_key(thread_id)
-    if not thread_key_cached:
-        thread_key = PBKDF2(psk, thread_id)
-    else:
-        thread_key = thread_key_cached
-    sig_computed = hmac.new(thread_key, sigless_raw_data, SCRIPT_WISE_HASH_ALGO).digest()
+        thread_key_cached = thread_key_nonce_tracker.get_key(thread_id)
+        if not thread_key_cached:
+            thread_key = PBKDF2(psk, thread_id)
+        else:
+            thread_key = thread_key_cached
+        sig_computed = hmac.new(thread_key, sigless_raw_data, SCRIPT_WISE_HASH_ALGO).digest()
 
-    if not hmac.compare_digest(sig_computed, sig):
-        raise Exception("Received invalid signature for a message. Data tampering/forging attempt?")
-    thread_key_nonce_tracker.increment_nonce(thread_id)
+        if not hmac.compare_digest(sig_computed, sig):
+            raise Exception("Received invalid signature for a message. Data tampering/forging attempt?")
     thread_key_cached or thread_key_nonce_tracker.set_key(thread_id, thread_key)
 
     return pickle.loads(cmd_pickled)

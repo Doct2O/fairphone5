@@ -75,7 +75,7 @@ Here are concrete commands to set them properly ***(Must be run as root)***:
 - `setprop sys.usb.configfs 1`
 - `setprop sys.usb.ffs.ready 1`
 
-And after reading some more boot scripts from `/vendor`, to be precise `/vendor/bin/init.qcom.usb.sh` of LinegeOS build.
+And after reading some more boot scripts from `/vendor`, to be precise `/vendor/bin/init.qcom.usb.sh` of LineageOS build.
 It turns out the proper value of `sys.usb.config` for Fairphone 5 and its SoC is: `diag,serial_cdev,rmnet,dpl,qdss,adb`.
 Other ones work as well (for the most part). But this one is intended by the manufacturer.
 

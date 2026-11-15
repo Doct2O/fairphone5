@@ -1,5 +1,44 @@
 # Display port/HDMI over USB-C on LineageOS
 
+**One of the updates for LineageOS 24 brought much anticipated, fully working desktop mode on the external display out of the box.
+It is a bit shaky; for example sometimes apps open at the phone's screen instead of the external display,
+but overall there's nothing worth complaining about (just reopen the app again from ext display damit).  
+The technical info contained here should be still more or less valid, but as the desktop mode seems stable, perfectly 
+usable and addresses all my needs, I doubt I'll update these docs and scripts, as it completely out-dates my `autores-fp5.sh` script 
+(and I can't be more happy about it). Even blacking out just the phone's screen on inactivity and full-screen app support work
+(the latter can be selected by clicking the app's icon in the corner)!  
+I keep it as an historical record, though. Maybe someone can make some use of it.**
+
+**Good job LineageOS crew!**
+
+**On a slightly different note.  
+I even tested desktop mode with Dolphin emulator (60 fps, 2x native resolution, vulkan rendered,
+precompiled shaders, 2x anisotropic filtering, no other enhancements) in SSBB (3x Ice climbers, Delfino Plaza) 
+and it seems to be working well to some degree (hehe).
+The game pad via Bluetooth works no problem at all (as long as the emulator window grabs the focus, and the phone's screen is
+not locked. If it locks, the analogs stop working for some reason).  
+There are stutters and micro slowdowns here and there, as well as emulation fails 
+(first enter full screen mode, then play the game) but those are manageable, however there is a more burning (hihi) matter.  
+The elephant in the room and the real red-hot topic (huehue) is the problem with heat.  
+When the cores reach ~60°C the major thermal throttling kicks in, and the framerate drops to around 40 fps and lower and real stutter starts.
+I hit rock bottom of 10 fps with this.  
+When I've lifted the throttle assured by `thermal-engine`, I couldn't find a safe and usable spot.
+The heat builds up gradually and does not seem to go away. Plus sometimes I had a permanent dip in performance, where the lower bound framerate 
+oscillates around 40 fps in the heat of the moment (jaja) instead of ~60 fps.  
+I suspect a culprit related to low battery levels, but it does not really matter at this point.  
+The major concern is not the cores' temperature - as one could expect - (I observed 83°C there) but the battery's,
+which easily reaches 43°C and above after ~35min. This is a complete deal breaker in terms of emulation. And I cannot see another solution 
+than installing a proper cooling system. Needless to say, such mod would be preposterous.  
+So no demanding emulation for you my fellow Fairphoner :(**
+
+**The upside of this whole situation is that - as a result of my fiddling - I am sharing the live temperature monitoring script for the Fairphone 5,
+which I used during the Dolphin emulator tests.
+It can be found in folder `hw-tinkering/thermal/` named `temp-monit.sh`**.
+
+**Couple of remarks for desktop mode, because of course I have a few:**
+- Mouse is pretty much mandatory.
+- If you want to have a window in a full screen, click its icon on title bar, and select the full screen there.
+
 ~~As funny as it may sound either LineageOS or the Fairphone itself (but pretty sure, the former,  
 because IIRC it worked out of the box on the stock ROM) is really fussy about how, what, and in  
 what order is plugged into the USB-C port, while trying to use the external display.~~
@@ -7,10 +46,9 @@ what order is plugged into the USB-C port, while trying to use the external disp
 ~~Nevertheless after going borderline insane, I think I managed to determine the proper 
 way to plug in stuff to make LineageOS happy and which works _pretty_ reliably.~~
 
-It seems that the fussiness of the LineageOS has been recently fixed, now one does not longer
+~~It seems that the fussiness of the LineageOS has been recently fixed, now one does not longer
 need to lock and unlock the screen to get external screen working. Also this preposterous juggling
-of the connected devices in the proper order (mouse, charger and the HDMI cable) seems to be fixed as well.
-**Good job LineageOS crew!**
+of the connected devices in the proper order (mouse, charger and the HDMI cable) seems to be fixed as well.~~
 
 # Prerequisites
 
